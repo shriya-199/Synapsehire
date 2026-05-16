@@ -198,7 +198,7 @@ const resendEmailVerification = async (user) => {
     throw new ApiError(409, 'Email is already verified');
   }
 
-  await sendEmailVerification(user);
+  queueEmailVerification(user);
 };
 
 const resendEmailVerificationByEmail = async ({ email }) => {
@@ -212,7 +212,7 @@ const resendEmailVerificationByEmail = async ({ email }) => {
     return;
   }
 
-  await sendEmailVerification(user);
+  queueEmailVerification(user);
 };
 
 const forgotPassword = async ({ email }) => {
