@@ -3,15 +3,11 @@ services:
     name: synapsehire-api
     runtime: node
     rootDir: synapsehire-backend
-    plan: starter
+    plan: free
     buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /api/v1/health
     autoDeploy: true
-    disk:
-      name: synapsehire-uploads
-      mountPath: /opt/render/project/src/synapsehire-backend/uploads
-      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
