@@ -64,6 +64,9 @@ const env = {
     greetingTimeoutMs: Number(process.env.SMTP_GREETING_TIMEOUT_MS || 10000),
     socketTimeoutMs: Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 15000)
   },
+  brevo: {
+    apiKey: process.env.BREVO_API_KEY
+  },
   upload: {
     maxFileSizeMb: Number(process.env.UPLOAD_MAX_FILE_SIZE_MB || 10),
     resumeStoragePath: process.env.RESUME_STORAGE_PATH || 'uploads/resumes',
