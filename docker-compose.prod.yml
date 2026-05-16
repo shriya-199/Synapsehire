@@ -1,0 +1,115 @@
+services:
+  api:
+    build:
+      context: ./synapsehire-backend
+      dockerfile: Dockerfile
+    image: synapsehire-api:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file:
+      - ./ops/env/backend.production.env
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+    volumes:
+      - recording_data:/app/uploads/recordings
+      - api_logs:/app/logs
+    expose:
+      - "5000"
+    networks:
+      - synapsehire
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:5000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./synapsehire-frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-https://api.synapsehire.example.com/api/v1}
+        VITE_SOCKET_URL: ${VITE_SOCKET_URL:-https://api.synapsehire.example.com}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+    image: synapsehire-web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks:
+      - synapsehire
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+      - frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./ops/nginx/synapsehire.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ops/certbot/www:/var/www/certbot
+      - ./ops/certbot/conf:/etc/letsencrypt
+      - nginx_logs:/var/log/nginx
+    networks:
+      - synapsehire
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=15d"
+    volumes:
+      - ./ops/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - synapsehire
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-change-me}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./ops/monitoring/grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3001:3000"
+    networks:
+      - synapsehire
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    restart: unless-stopped
+    pid: host
+    command:
+      - "--path.rootfs=/host"
+    volumes:
+      - "/:/host:ro,rslave"
+    networks:
+      - synapsehire
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.67.0
+    restart: unless-stopped
+    environment:
+      REDIS_ADDR: ${REDIS_EXPORTER_ADDR:-redis://redis:6379}
+    networks:
+      - synapsehire
+
+networks:
+  synapsehire:
+    driver: bridge
+
+volumes:
+  recording_data:
+  api_logs:
+  nginx_logs:
+  prometheus_data:
+  grafana_data:
