@@ -10,7 +10,16 @@ const initialForm = {
   role: '',
   seniority: 'MID',
   durationMinutes: 60,
-  description: ''
+  description: '',
+  questions: [
+    {
+      title: '',
+      prompt: '',
+      starterCode: '',
+      language: 'javascript',
+      testCases: [{ input: '', expectedOutput: '', hidden: false }]
+    }
+  ]
 };
 
 export function AssessmentBuilderPage() {
@@ -36,7 +45,12 @@ export function AssessmentBuilderPage() {
       await recruiterApi.createAssessment({
         ...form,
         durationMinutes: Number(form.durationMinutes),
-        questions: []
+        questions: form.questions.map((question, index) => ({
+          ...question,
+          order: index + 1,
+          weight: 10,
+          testCases: question.testCases.filter((testCase) => testCase.expectedOutput.trim())
+        }))
       });
       setForm(initialForm);
       setMessage('Assessment created.');
@@ -84,6 +98,66 @@ export function AssessmentBuilderPage() {
               <input className="h-11 rounded-[8px] border border-slate-300 px-3 text-sm" type="number" min="15" max="300" value={form.durationMinutes} onChange={(e) => setForm({ ...form, durationMinutes: e.target.value })} />
             </div>
             <textarea className="h-28 w-full resize-none rounded-[8px] border border-slate-300 p-3 text-sm" placeholder="Assessment description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <div className="rounded-[8px] border border-slate-200 bg-slate-50 p-3">
+              <p className="mb-3 text-sm font-semibold">Coding question</p>
+              {form.questions.map((question, questionIndex) => (
+                <div key={questionIndex} className="space-y-3">
+                  <input className="h-10 w-full rounded-[8px] border border-slate-300 px-3 text-sm" placeholder="Question title" value={question.title} onChange={(e) => {
+                    const next = [...form.questions];
+                    next[questionIndex] = { ...question, title: e.target.value };
+                    setForm({ ...form, questions: next });
+                  }} required />
+                  <textarea className="h-24 w-full resize-none rounded-[8px] border border-slate-300 p-3 text-sm" placeholder="Problem statement" value={question.prompt} onChange={(e) => {
+                    const next = [...form.questions];
+                    next[questionIndex] = { ...question, prompt: e.target.value };
+                    setForm({ ...form, questions: next });
+                  }} required />
+                  <textarea className="h-24 w-full resize-none rounded-[8px] border border-slate-300 p-3 font-mono text-xs" placeholder="Starter code" value={question.starterCode} onChange={(e) => {
+                    const next = [...form.questions];
+                    next[questionIndex] = { ...question, starterCode: e.target.value };
+                    setForm({ ...form, questions: next });
+                  }} />
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Test cases</p>
+                    {question.testCases.map((testCase, testIndex) => (
+                      <div key={testIndex} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                        <input className="h-10 rounded-[8px] border border-slate-300 px-3 text-sm" placeholder="Input/stdin" value={testCase.input} onChange={(e) => {
+                          const next = [...form.questions];
+                          const testCases = [...question.testCases];
+                          testCases[testIndex] = { ...testCase, input: e.target.value };
+                          next[questionIndex] = { ...question, testCases };
+                          setForm({ ...form, questions: next });
+                        }} />
+                        <input className="h-10 rounded-[8px] border border-slate-300 px-3 text-sm" placeholder="Expected output" value={testCase.expectedOutput} onChange={(e) => {
+                          const next = [...form.questions];
+                          const testCases = [...question.testCases];
+                          testCases[testIndex] = { ...testCase, expectedOutput: e.target.value };
+                          next[questionIndex] = { ...question, testCases };
+                          setForm({ ...form, questions: next });
+                        }} required />
+                        <label className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                          <input type="checkbox" checked={testCase.hidden} onChange={(e) => {
+                            const next = [...form.questions];
+                            const testCases = [...question.testCases];
+                            testCases[testIndex] = { ...testCase, hidden: e.target.checked };
+                            next[questionIndex] = { ...question, testCases };
+                            setForm({ ...form, questions: next });
+                          }} />
+                          Hidden
+                        </label>
+                      </div>
+                    ))}
+                    <button type="button" className="text-sm font-semibold text-brand" onClick={() => {
+                      const next = [...form.questions];
+                      next[questionIndex] = { ...question, testCases: [...question.testCases, { input: '', expectedOutput: '', hidden: false }] };
+                      setForm({ ...form, questions: next });
+                    }}>
+                      Add test case
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
             <button className="h-11 w-full rounded-[8px] bg-ink text-sm font-semibold text-white">Create assessment</button>
           </form>
         </section>
@@ -102,7 +176,7 @@ export function AssessmentBuilderPage() {
                   <ClipboardList size={20} className="text-brand" />
                   <div>
                     <p className="font-semibold">{assessment.title}</p>
-                    <p className="text-sm text-slate-500">{assessment.role} - {assessment.seniority} - {assessment.durationMinutes} min</p>
+                    <p className="text-sm text-slate-500">{assessment.role} - {assessment.seniority} - {assessment.durationMinutes} min - {assessment.questions?.length || 0} question(s)</p>
                   </div>
                 </div>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{assessment.status}</span>

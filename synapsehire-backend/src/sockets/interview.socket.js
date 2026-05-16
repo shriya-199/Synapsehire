@@ -24,8 +24,12 @@ const registerInterviewSocket = (io, socket) => {
       );
 
       const room = `interview:${interviewId}`;
+      const recruiterRoom = `interview:${interviewId}:recruiters`;
       const { state } = await roomService.hydrateRoom(socket.user, interviewId);
       socket.join(room);
+      if (socket.user.role !== 'CANDIDATE') {
+        socket.join(recruiterRoom);
+      }
       socket.data.interviewId = interviewId;
 
       const participant = {
@@ -248,7 +252,7 @@ const registerInterviewSocket = (io, socket) => {
         payload: value.payload
       });
 
-      io.to(`interview:${value.interviewId}`).emit('monitoring:flag', {
+      io.to(`interview:${value.interviewId}:recruiters`).emit('monitoring:flag', {
         interviewId: value.interviewId,
         alert
       });

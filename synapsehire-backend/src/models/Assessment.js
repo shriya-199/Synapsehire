@@ -49,7 +49,21 @@ const assessmentSchema = new mongoose.Schema(
     },
     questions: [
       {
-        questionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Question', required: true },
+        title: { type: String, required: true, trim: true, maxlength: 180 },
+        prompt: { type: String, required: true, trim: true, maxlength: 5000 },
+        starterCode: { type: String, default: '' },
+        language: {
+          type: String,
+          enum: ['javascript', 'typescript', 'python', 'java', 'cpp'],
+          default: 'javascript'
+        },
+        testCases: [
+          {
+            input: { type: String, default: '' },
+            expectedOutput: { type: String, required: true },
+            hidden: { type: Boolean, default: false }
+          }
+        ],
         order: { type: Number, required: true },
         weight: { type: Number, min: 0, max: 100, default: 10 }
       }

@@ -1,6 +1,7 @@
 const express = require('express');
 const authRoutes = require('./auth.routes');
 const userRoutes = require('./user.routes');
+const organizationRoutes = require('./organization.routes');
 const assessmentRoutes = require('./assessment.routes');
 const interviewRoutes = require('./interview.routes');
 const codeExecutionRoutes = require('./codeExecution.routes');
@@ -17,6 +18,7 @@ router.get('/health', healthController.health);
 
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
+router.use('/organizations', organizationRoutes);
 router.use('/assessments', assessmentRoutes);
 router.use('/interviews', interviewRoutes);
 router.use('/code', codeExecutionRoutes);

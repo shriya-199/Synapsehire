@@ -14,6 +14,8 @@ const listInterviews = asyncHandler(async (req, res) => {
 
 const getInterview = asyncHandler(async (req, res) => {
   const interview = await interviewService.getInterviewById(req.user, req.params.id);
+  await interview.populate('assessmentId', 'title role seniority durationMinutes questions');
+  await interview.populate('candidateId', 'name email candidateProfile');
   sendSuccess(res, interview, 'Interview retrieved');
 });
 

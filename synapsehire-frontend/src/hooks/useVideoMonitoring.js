@@ -37,7 +37,7 @@ export function useVideoMonitoring({ interviewId, socketRef, videoRef, audioStre
   }, [enabled, interviewId, socketRef]);
 
   useEffect(() => {
-    if (!enabled || !videoRef.current || !('FaceDetector' in window)) return undefined;
+    if (!enabled || !videoRef?.current || !('FaceDetector' in window)) return undefined;
 
     const detector = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 4 });
     let cancelled = false;

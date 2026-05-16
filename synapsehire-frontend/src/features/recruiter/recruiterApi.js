@@ -7,6 +7,8 @@ export const recruiterApi = {
     if (appliedRole) params.set('appliedRole', appliedRole);
     return apiClient.get(`/users/candidates${params.toString() ? `?${params.toString()}` : ''}`);
   },
+  getCandidate: (id) => apiClient.get(`/users/candidates/${id}`),
+  downloadCandidateResume: (id) => apiClient.get(`/users/candidates/${id}/resume`, { responseType: 'blob' }),
   listAssessments: () => apiClient.get('/assessments'),
   createAssessment: (payload) => apiClient.post('/assessments', payload),
   listInterviews: () => apiClient.get('/interviews'),

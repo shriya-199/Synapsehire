@@ -1,6 +1,7 @@
 import { apiClient } from '../../lib/apiClient';
 
 export const candidateApi = {
+  listOrganizations: () => apiClient.get('/organizations'),
   updateProfile: (payload) => apiClient.patch('/users/me', payload),
   uploadResume: (file) => {
     const formData = new FormData();

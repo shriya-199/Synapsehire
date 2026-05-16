@@ -71,7 +71,7 @@ export function useWebRTCInterview({ interviewId, socketRef, localStream, partic
 
   useEffect(() => {
     const socket = socketRef.current;
-    if (!socket || !localStream) return undefined;
+    if (!socket) return undefined;
 
     const onOffer = async ({ fromUserId, signal }) => {
       const peer = ensurePeer(fromUserId, false);

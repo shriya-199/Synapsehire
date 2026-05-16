@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
+import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { SignupPage } from './pages/auth/SignupPage';
 import { VerifyEmailPage } from './pages/auth/VerifyEmailPage';
@@ -16,6 +17,7 @@ import { RecruiterMonitoringPage } from './pages/video/RecruiterMonitoringPage';
 import { AssessmentBuilderPage } from './pages/recruiter/AssessmentBuilderPage';
 import { ScheduleInterviewPage } from './pages/recruiter/ScheduleInterviewPage';
 import { RecruiterInterviewsPage } from './pages/recruiter/RecruiterInterviewsPage';
+import { CandidateDetailPage } from './pages/recruiter/CandidateDetailPage';
 import { CandidateProfilePage } from './pages/candidate/CandidateProfilePage';
 import { UnauthorizedPage } from './pages/UnauthorizedPage';
 import { ProtectedRoute } from './routes/ProtectedRoute';
@@ -38,7 +40,7 @@ const LazyPage = ({ children }) => (
 );
 
 export const router = createBrowserRouter([
-  { path: '/', element: <Navigate to="/login" replace /> },
+  { path: '/', element: <HomePage /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/signup', element: <SignupPage /> },
   { path: '/verify-email', element: <VerifyEmailPage /> },
@@ -58,6 +60,7 @@ export const router = createBrowserRouter([
       { path: '/recruiter/assessments', element: <AssessmentBuilderPage /> },
       { path: '/recruiter/interviews', element: <RecruiterInterviewsPage /> },
       { path: '/recruiter/interviews/new', element: <ScheduleInterviewPage /> },
+      { path: '/recruiter/candidates/:candidateId', element: <CandidateDetailPage /> },
       { path: '/candidate/profile', element: <CandidateProfilePage /> },
       { path: '/ai/analytics', element: <AIAnalyticsPage /> },
       {

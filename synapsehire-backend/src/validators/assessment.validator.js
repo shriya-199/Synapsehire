@@ -1,7 +1,17 @@
 const Joi = require('joi');
 
+const testCaseSchema = Joi.object({
+  input: Joi.string().allow('').max(20000).default(''),
+  expectedOutput: Joi.string().allow('').max(20000).required(),
+  hidden: Joi.boolean().default(false)
+});
+
 const questionRefSchema = Joi.object({
-  questionId: Joi.string().hex().length(24).required(),
+  title: Joi.string().trim().min(3).max(180).required(),
+  prompt: Joi.string().trim().min(3).max(5000).required(),
+  starterCode: Joi.string().allow('').max(200000).default(''),
+  language: Joi.string().valid('javascript', 'typescript', 'python', 'java', 'cpp').default('javascript'),
+  testCases: Joi.array().items(testCaseSchema).min(1).max(20).required(),
   order: Joi.number().integer().min(1).required(),
   weight: Joi.number().min(0).max(100).default(10)
 });

@@ -23,7 +23,20 @@ const codeRunSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    questionId: String,
     stdin: String,
+    expectedOutput: String,
+    passed: Boolean,
+    testCaseResults: [
+      {
+        input: String,
+        expectedOutput: String,
+        actualOutput: String,
+        passed: Boolean,
+        hidden: Boolean,
+        error: String
+      }
+    ],
     status: {
       type: String,
       enum: ['QUEUED', 'RUNNING', 'COMPLETED', 'FAILED', 'REJECTED'],

@@ -62,6 +62,7 @@ const env = {
   },
   upload: {
     maxFileSizeMb: Number(process.env.UPLOAD_MAX_FILE_SIZE_MB || 10),
+    resumeStoragePath: process.env.RESUME_STORAGE_PATH || 'uploads/resumes',
     recordingMaxChunkMb: Number(process.env.RECORDING_MAX_CHUNK_MB || 25),
     recordingStoragePath: process.env.RECORDING_STORAGE_PATH || 'uploads/recordings'
   },

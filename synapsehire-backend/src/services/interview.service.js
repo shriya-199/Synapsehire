@@ -5,6 +5,8 @@ const Assessment = require('../models/Assessment');
 const User = require('../models/User');
 const { getRedis } = require('../config/redis');
 
+const normalizeRole = (role = '') => role.trim().toLowerCase();
+
 const createInterview = async (user, payload) => {
   const assessment = await Assessment.findById(payload.assessmentId);
 
@@ -22,7 +24,7 @@ const createInterview = async (user, payload) => {
   }
 
   const appliedRole = candidate.candidateProfile?.appliedRole;
-  if (appliedRole && appliedRole !== assessment.role) {
+  if (appliedRole && normalizeRole(appliedRole) !== normalizeRole(assessment.role)) {
     throw new ApiError(400, `Candidate applied for ${appliedRole}, but this assessment is for ${assessment.role}`);
   }
 
@@ -46,7 +48,12 @@ const listInterviews = async (user) => {
     filter.organizationId = user.organizationId;
   }
 
-  return Interview.find(filter).sort({ scheduledAt: -1 }).limit(100);
+  return Interview.find(filter)
+    .populate('assessmentId', 'title role seniority durationMinutes')
+    .populate('candidateId', 'name email candidateProfile')
+    .populate('recruiterId', 'name email')
+    .sort({ scheduledAt: -1 })
+    .limit(100);
 };
 
 const getInterviewById = async (user, interviewId) => {

@@ -64,9 +64,19 @@ const userSchema = new mongoose.Schema(
       },
       resume: {
         fileName: { type: String, trim: true },
+        storageName: { type: String, trim: true },
+        path: { type: String, trim: true },
         mimeType: { type: String, trim: true },
         size: Number,
         uploadedAt: Date
+      },
+      atsScore: { type: Number, min: 0, max: 100, default: 0, index: true },
+      techStack: [{ type: String, trim: true }],
+      resumeParsedAt: Date,
+      resumeSignals: {
+        matchedKeywords: [{ type: String, trim: true }],
+        missingKeywords: [{ type: String, trim: true }],
+        summary: { type: String, trim: true, maxlength: 500 }
       }
     }
   },
@@ -83,6 +93,7 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.index({ organizationId: 1, role: 1 });
+userSchema.index({ organizationId: 1, role: 1, 'candidateProfile.atsScore': -1 });
 
 userSchema.statics.hashPassword = function hashPassword(password) {
   return bcrypt.hash(password, env.bcryptSaltRounds);

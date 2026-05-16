@@ -1,0 +1,89 @@
+services:
+  - type: web
+    name: synapsehire-api
+    runtime: node
+    rootDir: synapsehire-backend
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    disk:
+      name: synapsehire-uploads
+      mountPath: /opt/render/project/src/synapsehire-backend/uploads
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_VERSION
+        value: v1
+      - key: CLIENT_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: EMAIL_VERIFICATION_URL
+        sync: false
+      - key: PASSWORD_RESET_URL
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: REDIS_KEY_PREFIX
+        value: synapsehire:
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 30d
+      - key: JWT_REFRESH_COOKIE_NAME
+        value: synapsehire_refresh
+      - key: JWT_ISSUER
+        value: synapsehire-api
+      - key: JWT_AUDIENCE
+        value: synapsehire-web
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX
+        value: 300
+      - key: AUTH_RATE_LIMIT_MAX
+        value: 20
+      - key: LOG_LEVEL
+        value: info
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_SECURE
+        value: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: UPLOAD_MAX_FILE_SIZE_MB
+        value: 10
+      - key: RESUME_STORAGE_PATH
+        value: uploads/resumes
+      - key: RECORDING_MAX_CHUNK_MB
+        value: 25
+      - key: RECORDING_STORAGE_PATH
+        value: uploads/recordings
+      - key: CODE_RUNNER_URL
+        sync: false
+      - key: AI_PROVIDER
+        value: openai
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-1.5-flash

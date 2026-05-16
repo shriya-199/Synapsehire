@@ -5,6 +5,8 @@ import { recruiterApi } from '../../features/recruiter/recruiterApi';
 import { getApiErrorMessage } from '../../lib/apiClient';
 import { hiringRoles } from '../../constants/hiringRoles';
 
+const normalizeRole = (role = '') => role.trim().toLowerCase();
+
 export function ScheduleInterviewPage() {
   const [assessments, setAssessments] = useState([]);
   const [candidates, setCandidates] = useState([]);
@@ -26,9 +28,22 @@ export function ScheduleInterviewPage() {
       .catch((apiError) => setError(getApiErrorMessage(apiError)));
   }, []);
 
-  const roleAssessments = form.role ? assessments.filter((assessment) => assessment.role === form.role) : assessments;
-  const roleCandidates = form.role
-    ? candidates.filter((candidate) => candidate.candidateProfile?.appliedRole === form.role)
+  const roleOptions = Array.from(
+    new Set([
+      ...hiringRoles,
+      ...assessments.map((assessment) => assessment.role).filter(Boolean),
+      ...candidates.map((candidate) => candidate.candidateProfile?.appliedRole).filter(Boolean)
+    ])
+  );
+  const selectedRole = normalizeRole(form.role);
+  const roleAssessments = selectedRole
+    ? assessments.filter((assessment) => normalizeRole(assessment.role) === selectedRole)
+    : assessments;
+  const roleCandidates = selectedRole
+    ? candidates.filter((candidate) => {
+        const appliedRole = candidate.candidateProfile?.appliedRole;
+        return !appliedRole || normalizeRole(appliedRole) === selectedRole;
+      })
     : candidates;
 
   const updateRole = (role) => {
@@ -82,7 +97,7 @@ export function ScheduleInterviewPage() {
               required
             >
               <option value="">Select role</option>
-              {hiringRoles.map((role) => (
+              {roleOptions.map((role) => (
                 <option key={role} value={role}>
                   {role}
                 </option>
@@ -107,6 +122,8 @@ export function ScheduleInterviewPage() {
             </select>
             {form.role && !roleAssessments.length ? (
               <p className="mt-2 text-xs text-amber-700">No assessments found for this role. Create an assessment first.</p>
+            ) : form.role ? (
+              <p className="mt-2 text-xs text-slate-500">{roleAssessments.length} assessment option(s) for {form.role}.</p>
             ) : null}
           </label>
 
@@ -121,12 +138,14 @@ export function ScheduleInterviewPage() {
               <option value="">Select candidate</option>
               {roleCandidates.map((candidate) => (
                 <option key={candidate._id} value={candidate._id}>
-                  {candidate.name} - {candidate.email} - {candidate.candidateProfile?.resume ? 'Resume uploaded' : 'No resume'}
+                  ATS {candidate.candidateProfile?.atsScore || 0}% - {candidate.name} - {candidate.email} - {candidate.candidateProfile?.appliedRole || 'Role not selected'} - {candidate.candidateProfile?.techStack?.slice(0, 3).join(', ') || 'No parsed stack'}
                 </option>
               ))}
             </select>
             {form.role && !roleCandidates.length ? (
               <p className="mt-2 text-xs text-amber-700">No candidates have selected this role yet.</p>
+            ) : form.role ? (
+              <p className="mt-2 text-xs text-slate-500">Candidates without a selected role are also shown so you can still schedule them.</p>
             ) : null}
           </label>
 

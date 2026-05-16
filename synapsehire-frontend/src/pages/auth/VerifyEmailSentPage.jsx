@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { MailCheck, Send } from 'lucide-react';
 import { AuthLayout } from '../../components/auth/AuthLayout';
 import { authApi } from '../../features/auth/authApi';
 import { getApiErrorMessage } from '../../lib/apiClient';
 
 export function VerifyEmailSentPage() {
+  const location = useLocation();
+  const [email, setEmail] = useState(location.state?.email || '');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,8 +16,14 @@ export function VerifyEmailSentPage() {
     setLoading(true);
     setError('');
     setMessage('');
+    if (!email.trim()) {
+      setError('Enter your email address to resend verification.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      await authApi.resendVerification();
+      await authApi.resendVerificationByEmail(email.trim());
       setMessage('Verification email sent again. Check your inbox and spam folder.');
     } catch (apiError) {
       setError(getApiErrorMessage(apiError));
@@ -42,6 +50,17 @@ export function VerifyEmailSentPage() {
 
       {message ? <div className="mt-4 rounded-[8px] bg-emerald-50 p-3 text-sm text-emerald-700">{message}</div> : null}
       {error ? <div className="mt-4 rounded-[8px] bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}
+
+      <label className="mt-5 block">
+        <span className="mb-2 block text-sm font-medium text-slate-700">Email</span>
+        <input
+          className="h-11 w-full rounded-[8px] border border-slate-300 px-3 text-sm"
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="you@example.com"
+        />
+      </label>
 
       <button
         type="button"

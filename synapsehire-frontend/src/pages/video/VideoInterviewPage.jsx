@@ -16,6 +16,8 @@ export function VideoInterviewPage() {
   const screenStreamRef = useRef(null);
   const socketRef = useInterviewSocket(interviewId);
   const user = useSelector((state) => state.auth.user);
+  const isCandidate = user?.role === 'CANDIDATE';
+  const isRecruiter = user?.role && user.role !== 'CANDIDATE';
   const participants = useSelector((state) => state.interview.participants);
   const connected = useSelector((state) => state.interview.connected);
   const [localStream, setLocalStream] = useState(null);
@@ -47,7 +49,7 @@ export function VideoInterviewPage() {
     socketRef,
     videoRef: localVideoRef,
     audioStream: localStream,
-    enabled: Boolean(localStream)
+    enabled: Boolean(localStream && isCandidate)
   });
 
   useEffect(() => {
@@ -59,22 +61,25 @@ export function VideoInterviewPage() {
         if (localVideoRef.current) localVideoRef.current.srcObject = stream;
       })
       .catch(() => {
-        socketRef.current?.emit('monitoring:event', { interviewId, type: 'CAMERA_DISABLED', severity: 'HIGH' });
+        if (isCandidate) {
+          socketRef.current?.emit('monitoring:event', { interviewId, type: 'CAMERA_DISABLED', severity: 'HIGH' });
+          socketRef.current?.emit('monitoring:event', { interviewId, type: 'MIC_DISABLED', severity: 'MEDIUM' });
+        }
       });
 
     return () => {
       localStreamRef.current?.getTracks().forEach((track) => track.stop());
       screenStreamRef.current?.getTracks().forEach((track) => track.stop());
     };
-  }, [interviewId, socketRef]);
+  }, [interviewId, isCandidate, socketRef]);
 
   useEffect(() => {
     const socket = socketRef.current;
-    if (!socket) return undefined;
+    if (!socket || !isRecruiter) return undefined;
     const onAlert = (payload) => setAlerts((current) => [payload.alert, ...current].slice(0, 100));
     socket.on('monitoring:flag', onAlert);
     return () => socket.off('monitoring:flag', onAlert);
-  }, [connected, socketRef]);
+  }, [connected, isRecruiter, socketRef]);
 
   const emitMediaState = (next = {}) => {
     socketRef.current?.emit('video:media-state', {
@@ -93,7 +98,7 @@ export function VideoInterviewPage() {
     });
     setCameraEnabled(next);
     emitMediaState({ cameraEnabled: next });
-    if (!next) socketRef.current?.emit('monitoring:event', { interviewId, type: 'CAMERA_DISABLED' });
+    if (!next && isCandidate) socketRef.current?.emit('monitoring:event', { interviewId, type: 'CAMERA_DISABLED' });
   };
 
   const toggleMic = () => {
@@ -103,7 +108,7 @@ export function VideoInterviewPage() {
     });
     setMicEnabled(next);
     emitMediaState({ micEnabled: next });
-    if (!next) socketRef.current?.emit('monitoring:event', { interviewId, type: 'MIC_DISABLED' });
+    if (!next && isCandidate) socketRef.current?.emit('monitoring:event', { interviewId, type: 'MIC_DISABLED' });
   };
 
   const shareScreen = async () => {
@@ -112,7 +117,7 @@ export function VideoInterviewPage() {
       screenStreamRef.current = null;
       setScreenStream(null);
       emitMediaState({ screenSharing: false });
-      socketRef.current?.emit('monitoring:event', { interviewId, type: 'SCREEN_SHARE_STOPPED' });
+      if (isCandidate) socketRef.current?.emit('monitoring:event', { interviewId, type: 'SCREEN_SHARE_STOPPED' });
       return;
     }
 
@@ -121,7 +126,7 @@ export function VideoInterviewPage() {
       screenStreamRef.current = null;
       setScreenStream(null);
       emitMediaState({ screenSharing: false });
-      socketRef.current?.emit('monitoring:event', { interviewId, type: 'SCREEN_SHARE_STOPPED' });
+      if (isCandidate) socketRef.current?.emit('monitoring:event', { interviewId, type: 'SCREEN_SHARE_STOPPED' });
     };
     screenStreamRef.current = stream;
     setScreenStream(stream);
@@ -163,7 +168,7 @@ export function VideoInterviewPage() {
           </div>
         </section>
 
-        <AlertFeed alerts={alerts} />
+        {isRecruiter ? <AlertFeed alerts={alerts} /> : null}
       </div>
     </main>
   );

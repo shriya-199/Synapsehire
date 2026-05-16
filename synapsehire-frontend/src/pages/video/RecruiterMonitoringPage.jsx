@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { AlertFeed } from '../../components/video/AlertFeed';
 import { monitoringApi } from '../../features/monitoring/monitoringApi';
+import { useInterviewSocket } from '../../hooks/useInterviewSocket';
 import { getApiErrorMessage } from '../../lib/apiClient';
 
 export function RecruiterMonitoringPage() {
   const { interviewId } = useParams();
+  const socketRef = useInterviewSocket(interviewId);
+  const connected = useSelector((state) => state.interview.connected);
   const [dashboard, setDashboard] = useState(null);
   const [error, setError] = useState('');
 
@@ -21,6 +25,27 @@ export function RecruiterMonitoringPage() {
     const id = window.setInterval(load, 5000);
     return () => window.clearInterval(id);
   }, [load]);
+
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket) return undefined;
+
+    const onAlert = (payload) => {
+      setDashboard((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          totalAlerts: current.totalAlerts + 1,
+          maxRiskScore: Math.max(current.maxRiskScore || 0, payload.alert.score || 0),
+          openCritical: payload.alert.severity === 'CRITICAL' ? (current.openCritical || 0) + 1 : current.openCritical,
+          recentAlerts: [payload.alert, ...(current.recentAlerts || [])].slice(0, 25)
+        };
+      });
+    };
+
+    socket.on('monitoring:flag', onAlert);
+    return () => socket.off('monitoring:flag', onAlert);
+  }, [connected, socketRef]);
 
   const acknowledge = async (alertId) => {
     await monitoringApi.acknowledge(alertId);

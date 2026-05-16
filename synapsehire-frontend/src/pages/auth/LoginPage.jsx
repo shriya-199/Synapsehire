@@ -35,8 +35,13 @@ export function LoginPage() {
   const resendVerification = async () => {
     setVerificationMessage('');
     setVerificationError('');
+    if (!form.email.trim()) {
+      setVerificationError('Enter your email address first.');
+      return;
+    }
+
     try {
-      await authApi.resendVerificationByEmail(form.email);
+      await authApi.resendVerificationByEmail(form.email.trim());
       setVerificationMessage('Verification email sent. Check your inbox and spam folder.');
     } catch (apiError) {
       setVerificationError(getApiErrorMessage(apiError));

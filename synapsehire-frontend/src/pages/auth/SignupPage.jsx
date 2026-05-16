@@ -32,7 +32,7 @@ export function SignupPage() {
         ? { ...form, role }
         : { name: form.name, email: form.email, password: form.password, role };
     const result = await dispatch(action(payload));
-    if (action.fulfilled.match(result)) navigate('/verify-email-sent');
+    if (action.fulfilled.match(result)) navigate('/verify-email-sent', { state: { email: form.email } });
   };
 
   return (
