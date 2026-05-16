@@ -30,7 +30,7 @@ services:
       - key: REDIS_URL
         sync: false
       - key: REDIS_KEY_PREFIX
-        value: synapsehire:
+        value: "synapsehire:"
       - key: JWT_ACCESS_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
