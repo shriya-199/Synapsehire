@@ -12,6 +12,9 @@ const getMailer = () => {
     host: env.smtp.host,
     port: env.smtp.port,
     secure: env.smtp.secure,
+    connectionTimeout: env.smtp.connectionTimeoutMs,
+    greetingTimeout: env.smtp.greetingTimeoutMs,
+    socketTimeout: env.smtp.socketTimeoutMs,
     auth:
       env.smtp.user && env.smtp.pass
         ? {

@@ -9,6 +9,7 @@ const env = require('../config/env');
 const { getRedis } = require('../config/redis');
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 const emailService = require('./email.service');
+const logger = require('../utils/logger');
 
 const refreshTtlSeconds = 30 * 24 * 60 * 60;
 const googleClient = new OAuth2Client(env.google.clientId);
@@ -71,7 +72,19 @@ const sendEmailVerification = async (user) => {
     token,
     addMinutes(env.authTokens.emailVerificationTtlMinutes)
   );
-  await emailService.sendVerificationEmail({ to: user.email, name: user.name, token });
+  return emailService.sendVerificationEmail({ to: user.email, name: user.name, token });
+};
+
+const queueEmailVerification = async (user) => {
+  try {
+    await sendEmailVerification(user);
+  } catch (error) {
+    logger.error('Verification email failed', {
+      userId: user._id.toString(),
+      email: user.email,
+      error: error.message
+    });
+  }
 };
 
 const register = async ({ name, email, password, role, organizationId, organizationName }, reqMeta = {}) => {
@@ -98,7 +111,7 @@ const register = async ({ name, email, password, role, organizationId, organizat
     status: 'PENDING_EMAIL_VERIFICATION'
   });
 
-  await sendEmailVerification(user);
+  queueEmailVerification(user);
   return buildAuthPayload(user, reqMeta);
 };
 

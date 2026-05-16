@@ -58,7 +58,10 @@ const env = {
     secure: process.env.SMTP_SECURE === 'true',
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
-    from: process.env.SMTP_FROM || 'SynapseHire <no-reply@synapsehire.com>'
+    from: process.env.SMTP_FROM || 'SynapseHire <no-reply@synapsehire.com>',
+    connectionTimeoutMs: Number(process.env.SMTP_CONNECTION_TIMEOUT_MS || 10000),
+    greetingTimeoutMs: Number(process.env.SMTP_GREETING_TIMEOUT_MS || 10000),
+    socketTimeoutMs: Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 15000)
   },
   upload: {
     maxFileSizeMb: Number(process.env.UPLOAD_MAX_FILE_SIZE_MB || 10),
