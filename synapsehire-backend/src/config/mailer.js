@@ -39,6 +39,12 @@ const getMailer = () => {
 
 const sendBrevoMail = async ({ to, subject, html, text }) => {
   const sender = parseSender(env.smtp.from);
+  logger.info('Sending email through Brevo API', {
+    to,
+    subject,
+    sender: sender.email
+  });
+
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: {
@@ -61,7 +67,13 @@ const sendBrevoMail = async ({ to, subject, html, text }) => {
     throw new ApiError(502, 'Email provider rejected the message');
   }
 
-  return response.json();
+  const payload = await response.json();
+  logger.info('Brevo email API accepted message', {
+    to,
+    subject,
+    messageId: payload.messageId
+  });
+  return payload;
 };
 
 const sendMail = async ({ to, subject, html, text }) => {
@@ -73,6 +85,13 @@ const sendMail = async ({ to, subject, html, text }) => {
     logger.warn('SMTP_HOST is not configured. Email was not sent.', { to, subject });
     throw new ApiError(503, 'Email service is not configured. Set SMTP_HOST, SMTP_USER, SMTP_PASS, and SMTP_FROM.');
   }
+
+  logger.info('Sending email through SMTP', {
+    to,
+    subject,
+    host: env.smtp.host,
+    port: env.smtp.port
+  });
 
   return getMailer().sendMail({
     from: env.smtp.from,

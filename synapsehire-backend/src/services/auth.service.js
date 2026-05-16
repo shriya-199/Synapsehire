@@ -76,8 +76,17 @@ const sendEmailVerification = async (user) => {
 };
 
 const queueEmailVerification = async (user) => {
+  logger.info('Verification email queued', {
+    userId: user._id.toString(),
+    email: user.email
+  });
+
   try {
     await sendEmailVerification(user);
+    logger.info('Verification email sent', {
+      userId: user._id.toString(),
+      email: user.email
+    });
   } catch (error) {
     logger.error('Verification email failed', {
       userId: user._id.toString(),
@@ -205,10 +214,15 @@ const resendEmailVerificationByEmail = async ({ email }) => {
   const user = await User.findOne({ email });
 
   if (!user) {
+    logger.warn('Verification resend requested for unknown email', { email });
     return;
   }
 
   if (user.emailVerifiedAt) {
+    logger.info('Verification resend skipped for already verified email', {
+      userId: user._id.toString(),
+      email: user.email
+    });
     return;
   }
 
