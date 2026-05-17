@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 const iceServers = [{ urls: 'stun:stun.l.google.com:19302' }];
 
-export function useWebRTCInterview({ interviewId, socketRef, localStream, participants, currentUserId }) {
+export function useWebRTCInterview({ interviewId, socketRef, localStream, participants, currentUserId, channel = 'video' }) {
   const peersRef = useRef(new Map());
   const [remoteStreams, setRemoteStreams] = useState({});
 
@@ -21,6 +21,7 @@ export function useWebRTCInterview({ interviewId, socketRef, localStream, partic
           socketRef.current?.emit('video:signal', {
             interviewId,
             targetUserId,
+            channel,
             signalType: 'ice-candidate',
             signal: event.candidate.toJSON()
           });
@@ -51,6 +52,7 @@ export function useWebRTCInterview({ interviewId, socketRef, localStream, partic
             socketRef.current?.emit('video:signal', {
               interviewId,
               targetUserId,
+              channel,
               signalType: 'offer',
               signal: peer.localDescription
             });
@@ -59,7 +61,7 @@ export function useWebRTCInterview({ interviewId, socketRef, localStream, partic
 
       return peer;
     },
-    [currentUserId, interviewId, localStream, socketRef]
+    [channel, currentUserId, interviewId, localStream, socketRef]
   );
 
   useEffect(() => {
@@ -70,10 +72,39 @@ export function useWebRTCInterview({ interviewId, socketRef, localStream, partic
   }, [currentUserId, ensurePeer, localStream, participants]);
 
   useEffect(() => {
+    if (!localStream) return;
+
+    peersRef.current.forEach((peer, targetUserId) => {
+      localStream.getTracks().forEach((track) => {
+        const existingSender = peer.getSenders().find((sender) => sender.track?.kind === track.kind);
+        if (existingSender) {
+          existingSender.replaceTrack(track);
+        } else {
+          peer.addTrack(track, localStream);
+        }
+      });
+
+      peer
+        .createOffer()
+        .then((offer) => peer.setLocalDescription(offer))
+        .then(() => {
+          socketRef.current?.emit('video:signal', {
+            interviewId,
+            targetUserId,
+            channel,
+            signalType: 'offer',
+            signal: peer.localDescription
+          });
+        });
+    });
+  }, [channel, interviewId, localStream, socketRef]);
+
+  useEffect(() => {
     const socket = socketRef.current;
     if (!socket) return undefined;
 
-    const onOffer = async ({ fromUserId, signal }) => {
+    const onOffer = async ({ fromUserId, signal, channel: signalChannel = 'video' }) => {
+      if (signalChannel !== channel) return;
       const peer = ensurePeer(fromUserId, false);
       await peer.setRemoteDescription(new RTCSessionDescription(signal));
       const answer = await peer.createAnswer();
@@ -81,17 +112,20 @@ export function useWebRTCInterview({ interviewId, socketRef, localStream, partic
       socket.emit('video:signal', {
         interviewId,
         targetUserId: fromUserId,
+        channel,
         signalType: 'answer',
         signal: peer.localDescription
       });
     };
 
-    const onAnswer = async ({ fromUserId, signal }) => {
+    const onAnswer = async ({ fromUserId, signal, channel: signalChannel = 'video' }) => {
+      if (signalChannel !== channel) return;
       const peer = ensurePeer(fromUserId, false);
       await peer.setRemoteDescription(new RTCSessionDescription(signal));
     };
 
-    const onIce = async ({ fromUserId, signal }) => {
+    const onIce = async ({ fromUserId, signal, channel: signalChannel = 'video' }) => {
+      if (signalChannel !== channel) return;
       const peer = ensurePeer(fromUserId, false);
       await peer.addIceCandidate(new RTCIceCandidate(signal));
     };
@@ -105,7 +139,7 @@ export function useWebRTCInterview({ interviewId, socketRef, localStream, partic
       socket.off('video:answer', onAnswer);
       socket.off('video:ice-candidate', onIce);
     };
-  }, [ensurePeer, interviewId, localStream, socketRef]);
+  }, [channel, ensurePeer, interviewId, localStream, socketRef]);
 
   const replaceTracks = useCallback((nextStream) => {
     peersRef.current.forEach((peer) => {

@@ -127,13 +127,13 @@ function InterviewList({ interviews, role }) {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link className="inline-flex items-center gap-2 rounded-[8px] border border-slate-300 px-3 py-2 text-sm font-semibold" to={`/interviews/${interview._id}/room`}>
-              <Code2 size={16} />
-              Coding
-            </Link>
             <Link className="inline-flex items-center gap-2 rounded-[8px] border border-slate-300 px-3 py-2 text-sm font-semibold" to={`/interviews/${interview._id}/video`}>
               <Video size={16} />
-              Video
+              Interview
+            </Link>
+            <Link className="inline-flex items-center gap-2 rounded-[8px] border border-slate-300 px-3 py-2 text-sm font-semibold" to={`/assignments/${interview._id}/coding`}>
+              <Code2 size={16} />
+              Assignment
             </Link>
             {role !== 'CANDIDATE' ? (
               <Link className="inline-flex items-center gap-2 rounded-[8px] border border-slate-300 px-3 py-2 text-sm font-semibold" to={`/interviews/${interview._id}/monitoring`}>
@@ -209,7 +209,7 @@ function RecruiterDashboard({ data, loading }) {
           <ReadinessChart data={chartData} />
           <div className="mt-4 space-y-3 text-sm text-slate-600">
             <p className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-600" /> Assessments feed role-calibrated scheduling.</p>
-            <p className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-600" /> Interview rooms include coding, video, and monitoring.</p>
+            <p className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-600" /> Interviews and coding assignments open as separate sessions.</p>
             <p className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-600" /> Analytics convert activity into recruiter decisions.</p>
           </div>
         </div>
@@ -273,7 +273,7 @@ function CandidateDashboard({ user, data, loading }) {
       <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={FileUp} label="Applied role" value={profile.appliedRole || 'Not set'} to="/candidate/profile" />
         <StatCard icon={ShieldCheck} label="Resume" value={profile.resume ? 'Uploaded' : 'Missing'} to="/candidate/profile" />
-        <StatCard icon={PlayCircle} label="Interviews" value={loading ? '...' : interviews.length} tone="warm" to={interviews[0]?._id ? `/interviews/${interviews[0]._id}/room` : '/analytics/candidate'} />
+        <StatCard icon={PlayCircle} label="Interviews" value={loading ? '...' : interviews.length} tone="warm" to={interviews[0]?._id ? `/interviews/${interviews[0]._id}/video` : '/analytics/candidate'} />
         <StatCard icon={BarChart3} label="Completed" value={loading ? '...' : completed} tone="dark" to="/analytics/candidate" />
       </section>
 
@@ -285,8 +285,8 @@ function CandidateDashboard({ user, data, loading }) {
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <ActionCard icon={FileUp} title="Complete profile" copy="Select your applied role and upload your latest resume before scheduling." to="/candidate/profile" primary />
-            <ActionCard icon={Code2} title="Open coding rooms" copy="Join assigned Monaco coding simulations with live collaboration and execution." to={interviews[0]?._id ? `/interviews/${interviews[0]._id}/room` : '/analytics/candidate'} />
-            <ActionCard icon={Video} title="Join video interview" copy="Use the video room for live interview sessions and monitoring consent workflows." to={interviews[0]?._id ? `/interviews/${interviews[0]._id}/video` : '/analytics/candidate'} />
+            <ActionCard icon={Video} title="Join interview" copy="Open the live video interview with camera, microphone, and screen sharing." to={interviews[0]?._id ? `/interviews/${interviews[0]._id}/video` : '/analytics/candidate'} />
+            <ActionCard icon={Code2} title="Open assignment" copy="Join the Monaco coding assignment with test-case validation." to={interviews[0]?._id ? `/assignments/${interviews[0]._id}/coding` : '/analytics/candidate'} />
             <ActionCard icon={LineChart} title="Review AI feedback" copy="See communication, technical, and hiring probability trends after interviews." to="/analytics/candidate" />
           </div>
         </div>

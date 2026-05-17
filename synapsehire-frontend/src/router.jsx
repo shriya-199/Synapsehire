@@ -55,6 +55,7 @@ export const router = createBrowserRouter([
       { path: '/sessions', element: <SessionsPage /> },
       { path: '/dashboard', element: <DashboardPage /> },
       { path: '/interviews/:interviewId/room', element: <InterviewRoomPage /> },
+      { path: '/assignments/:interviewId/coding', element: <InterviewRoomPage /> },
       { path: '/interviews/:interviewId/video', element: <VideoInterviewPage /> },
       { path: '/interviews/:interviewId/monitoring', element: <RecruiterMonitoringPage /> },
       { path: '/recruiter/assessments', element: <AssessmentBuilderPage /> },

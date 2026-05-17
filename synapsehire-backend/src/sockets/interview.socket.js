@@ -267,6 +267,7 @@ const registerInterviewSocket = (io, socket) => {
         Joi.object({
           interviewId: objectId.required(),
           targetUserId: objectId.required(),
+          channel: Joi.string().valid('camera', 'screen', 'video').default('video'),
           signalType: Joi.string().valid('offer', 'answer', 'ice-candidate', 'renegotiate').required(),
           signal: Joi.object().required()
         }),
@@ -276,6 +277,7 @@ const registerInterviewSocket = (io, socket) => {
       io.to(`user:${value.targetUserId}`).emit(`video:${value.signalType}`, {
         interviewId: value.interviewId,
         fromUserId: socket.user.id,
+        channel: value.channel,
         signal: value.signal
       });
     } catch {
@@ -302,6 +304,31 @@ const registerInterviewSocket = (io, socket) => {
       });
     } catch {
       socket.emit('error', { message: 'Invalid media state payload' });
+    }
+  });
+
+  socket.on('video:visibility-control', (payload) => {
+    try {
+      const value = validatePayload(
+        Joi.object({
+          interviewId: objectId.required(),
+          candidateCanViewInterviewer: Joi.boolean().required()
+        }),
+        payload
+      );
+
+      if (socket.user.role === 'CANDIDATE') {
+        socket.emit('error', { message: 'Only interviewers can control video visibility' });
+        return;
+      }
+
+      socket.to(`interview:${value.interviewId}`).emit('video:visibility-control', {
+        ...value,
+        updatedBy: socket.user.id,
+        updatedAt: new Date().toISOString()
+      });
+    } catch {
+      socket.emit('error', { message: 'Invalid visibility control payload' });
     }
   });
 

@@ -7,7 +7,8 @@ export function VideoControls({
   recording,
   onToggleCamera,
   onToggleMic,
-  onShareScreen
+  onShareScreen,
+  canShareScreen = true
 }) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-3 rounded-[8px] border border-slate-200 bg-white p-3 shadow-sm">
@@ -19,10 +20,12 @@ export function VideoControls({
         {micEnabled ? <Mic size={18} /> : <MicOff size={18} />}
         Mic
       </button>
-      <button type="button" onClick={onShareScreen} className="flex h-11 items-center gap-2 rounded-[8px] border border-slate-300 px-4 text-sm font-semibold">
-        {screenSharing ? <MonitorX size={18} /> : <MonitorUp size={18} />}
-        Screen
-      </button>
+      {canShareScreen ? (
+        <button type="button" onClick={onShareScreen} className="flex h-11 items-center gap-2 rounded-[8px] border border-slate-300 px-4 text-sm font-semibold">
+          {screenSharing ? <MonitorX size={18} /> : <MonitorUp size={18} />}
+          Screen
+        </button>
+      ) : null}
       <span className={`flex h-11 items-center gap-2 rounded-[8px] px-4 text-sm font-semibold ${recording ? 'bg-red-50 text-red-700' : 'bg-slate-100 text-slate-500'}`}>
         {recording ? <RadioTower size={18} /> : <Radio size={18} />}
         {recording ? 'Recording' : 'Recorder idle'}

@@ -168,8 +168,11 @@ export function ScheduleInterviewPage() {
             <p className="font-semibold text-emerald-800">Interview scheduled.</p>
             <p className="mt-1 text-sm text-emerald-700">Interview ID: {createdInterview._id}</p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <Link className="rounded-[8px] bg-ink px-4 py-2 text-sm font-semibold text-white" to={`/interviews/${createdInterview._id}/room`}>
-                Open coding room
+              <Link className="rounded-[8px] bg-ink px-4 py-2 text-sm font-semibold text-white" to={`/interviews/${createdInterview._id}/video`}>
+                Open interview room
+              </Link>
+              <Link className="rounded-[8px] border border-slate-300 px-4 py-2 text-sm font-semibold" to={`/assignments/${createdInterview._id}/coding`}>
+                Open assignment
               </Link>
               <Link className="rounded-[8px] border border-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-800" to="/recruiter/interviews">
                 View interviews

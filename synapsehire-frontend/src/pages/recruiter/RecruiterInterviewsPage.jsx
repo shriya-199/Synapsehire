@@ -50,13 +50,13 @@ export function RecruiterInterviewsPage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Link className="flex items-center gap-2 rounded-[8px] border border-slate-300 px-3 py-2 text-sm font-semibold" to={`/interviews/${interview._id}/room`}>
+                  <Link className="flex items-center gap-2 rounded-[8px] border border-slate-300 px-3 py-2 text-sm font-semibold" to={`/assignments/${interview._id}/coding`}>
                     <Code2 size={16} />
-                    Coding
+                    Assignment
                   </Link>
                   <Link className="flex items-center gap-2 rounded-[8px] border border-slate-300 px-3 py-2 text-sm font-semibold" to={`/interviews/${interview._id}/video`}>
                     <Video size={16} />
-                    Video
+                    Interview
                   </Link>
                   <Link className="flex items-center gap-2 rounded-[8px] border border-slate-300 px-3 py-2 text-sm font-semibold" to={`/interviews/${interview._id}/monitoring`}>
                     <MonitorCheck size={16} />
